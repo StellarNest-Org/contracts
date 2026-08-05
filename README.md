@@ -316,3 +316,24 @@ stellar contract build
 # equivalent to: cargo build --target wasm32v1-none --release -p treasury
 ```
 
+## Testing
+
+`contracts/treasury/src/test.rs` has **14 tests** covering:
+
+- Treasury creation and owner registration
+- Deposits increasing balance
+- Small withdrawals executing immediately vs. large ones requiring approval
+- Rejecting a duplicate approval from the same approver
+- Enforcing a child's per-transaction spending limit
+- Freezing/unfreezing blocking and re-enabling withdrawals
+- Savings goal contribution tracking
+- Bills only payable once due, and not payable once cancelled
+- Inheritance vault allocation validation (must sum to 10,000 bps)
+- Inheritance claims distributing correctly after the dead-man switch expires
+- The heartbeat resetting the dead-man switch and blocking a premature claim
+- Non-administrators being rejected from adding members
+
+Tests use `soroban_sdk::testutils` (`Env::default()`, `mock_all_auths()`,
+`Address::generate`, a locally-registered Stellar Asset Contract for
+minting/transfer assertions) — no network or deployed contract required.
+
