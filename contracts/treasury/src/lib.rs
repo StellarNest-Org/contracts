@@ -339,3 +339,14 @@ impl TreasuryContract {
     // Savings goals
     // ---------------------------------------------------------------
 
+    pub fn create_savings_goal(
+        env: Env,
+        treasury_id: u64,
+        caller: Address,
+        name: String,
+        target_amount: i128,
+    ) -> Result<u64, Error> {
+        caller.require_auth();
+        let treasury = load_treasury(&env, treasury_id)?;
+        require_role(&env, &treasury, &caller, Role::can_administer)?;
+
