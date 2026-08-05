@@ -75,3 +75,15 @@ pub struct Bill {
     pub active: bool,
 }
 
+#[contracttype]
+#[derive(Clone, Debug)]
+pub struct Withdrawal {
+    pub id: u64,
+    pub treasury_id: u64,
+    pub requested_by: Address,
+    pub to: Address,
+    pub amount: i128,
+    pub approvals: Vec<Address>,
+    pub executed: bool,
+}
+
