@@ -423,3 +423,16 @@ impl TreasuryContract {
     // Bills & recurring payments (also used for child allowances)
     // ---------------------------------------------------------------
 
+    pub fn create_bill(
+        env: Env,
+        treasury_id: u64,
+        caller: Address,
+        name: String,
+        payee: Address,
+        amount: i128,
+        interval_ledgers: u32,
+    ) -> Result<u64, Error> {
+        caller.require_auth();
+        let treasury = load_treasury(&env, treasury_id)?;
+        require_role(&env, &treasury, &caller, Role::can_administer)?;
+
