@@ -213,3 +213,18 @@ fn savings_goal_progress_tracks_contributions() {
     assert_eq!(client.get_treasury(&id).balance, 400);
 }
 
+#[test]
+fn bill_pays_only_when_due() {
+    let (env, client, asset) = setup();
+    let owner = Address::generate(&env);
+    let payee = Address::generate(&env);
+    let id = client.create_treasury(
+        &owner,
+        &String::from_str(&env, "Family"),
+        &asset,
+        &1_000,
+        &2,
+    );
+    mint(&env, &asset, &owner, 10_000);
+    client.deposit(&id, &owner, &10_000);
+
