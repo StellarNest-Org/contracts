@@ -94,3 +94,16 @@ pub struct Beneficiary {
     pub allocation_bps: u32,
 }
 
+#[contracttype]
+#[derive(Clone, Debug)]
+pub struct InheritanceVault {
+    pub treasury_id: u64,
+    pub beneficiaries: Vec<Beneficiary>,
+    pub time_lock_ledger: u32,
+    pub dead_man_switch_period: u32,
+    pub last_heartbeat_ledger: u32,
+    pub guardian_approvals_required: u32,
+    pub guardian_approvals: Vec<Address>,
+    pub claimed: bool,
+}
+
