@@ -104,3 +104,35 @@ token*, regardless of what the backend or frontend tell it to do. That
 property — rules even StellarNest itself can't override — is the whole
 reason this is a contract and not just a Postgres table.
 
+## Core model
+
+`contracts/treasury` is a **single deployed contract instance** that
+manages *many* family treasuries, each identified by a `u64` id (the same
+multi-tenant-per-contract pattern used by most production Soroban apps,
+rather than deploying a fresh contract per family). It intentionally holds
+**no custodial keys** — every state-changing call requires the caller's
+own `require_auth()`, and every asset movement happens through the
+standard Stellar Asset Contract `token` interface (`token::Client`), never
+through an internal ledger only the contract admin can move.
+
+| Concept | What it is |
+|---|---|
+| **Treasury** | One per family. Denominated in a single Stellar asset (XLM, USDC, EURC, AQUA, or any Stellar Asset Contract). Tracks `balance`, `frozen` state, and the approval rule (`approval_threshold`, `required_approvals`). |
+| **Members & roles** | `Owner`, `Parent`, `Guardian`, `Child`, `Advisor`, `Viewer`. Roles gate which calls succeed (see [Method reference](#method-reference)). A `Child` member can additionally carry a per-transaction `spending_limit`. |
+| **Rules engine** | Withdrawals *below* `approval_threshold` execute immediately, subject to the caller's spending limit. Withdrawals *at or above* it become a pending `Withdrawal` that needs `required_approvals` signatures from Owner/Parent/Guardian members before funds move. |
+| **Savings goals** | Named targets (`Emergency Fund`, `Vacation`, ...) with their own `current_amount`, tracked independently of the treasury's free balance so progress is easy to display without a separate ledger. |
+| **Bills** | Recurring payments with an on-chain due schedule (`next_due_ledger`). `pay_bill` is **permissionless** but only succeeds once the schedule says it's due — a cron job or relayer can call it without ever being trusted with payment timing or amounts. |
+| **Inheritance vault** | Beneficiaries with *basis-point* allocations — basis points are just percentages with more precision (100 bps = 1%, so 10,000 bps = 100%); the contract requires every beneficiary's share to sum to exactly `10_000` so nothing is over- or under-allocated. A `time_lock_ledger` (see [glossary](#new-to-stellarsoroban-start-here) — this is a ledger *sequence number*, not a calendar date) and a dead-man switch the Owner resets via `heartbeat` both gate the claim. Claiming requires guardian approvals **and** either the time-lock or the dead-man switch to have elapsed, then distributes the full treasury balance pro-rata (proportionally, by each beneficiary's percentage) in one transaction. |
+
+Roles map to permissions like this (see `Role::can_administer`,
+`Role::can_approve`, `Role::can_spend` in `types.rs`):
+
+| Role | Administer (members/rules/goals/bills) | Approve withdrawals | Can request a spend | Notes |
+|---|:---:|:---:|:---:|---|
+| Owner | ✅ | ✅ | ✅ | Also the only role that can create/heartbeat the inheritance vault |
+| Parent | ✅ | ✅ | ✅ | |
+| Guardian | freeze only | ✅ | ✅ | Also the only role that can approve inheritance claims |
+| Child | ❌ | ❌ | ✅ (subject to `spending_limit`) | |
+| Advisor | ❌ | ❌ | ✅ | |
+| Viewer | ❌ | ❌ | ❌ | Read-only |
+
