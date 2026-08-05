@@ -214,3 +214,10 @@ impl TreasuryContract {
         let token_client = token::Client::new(&env, &treasury.asset);
         token_client.transfer(&from, &env.current_contract_address(), &amount);
 
+        treasury.balance += amount;
+        env.storage()
+            .persistent()
+            .set(&DataKey::Treasury(treasury_id), &treasury);
+        Ok(())
+    }
+
