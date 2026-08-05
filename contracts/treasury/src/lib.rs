@@ -572,3 +572,16 @@ impl TreasuryContract {
         Ok(())
     }
 
+    pub fn approve_inheritance_claim(
+        env: Env,
+        treasury_id: u64,
+        guardian: Address,
+    ) -> Result<(), Error> {
+        guardian.require_auth();
+        let treasury = load_treasury(&env, treasury_id)?;
+        let member = load_member(&env, treasury_id, &guardian)?;
+        if !matches!(member.role, Role::Guardian) {
+            return Err(Error::NotAuthorized);
+        }
+        let _ = treasury;
+
