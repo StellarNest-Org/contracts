@@ -361,3 +361,15 @@ impl TreasuryContract {
         };
         env.storage().persistent().set(&DataKey::Goal(id), &goal);
 
+        let mut list: Vec<u64> = env
+            .storage()
+            .persistent()
+            .get(&DataKey::GoalList(treasury_id))
+            .unwrap_or_else(|| Vec::new(&env));
+        list.push_back(id);
+        env.storage()
+            .persistent()
+            .set(&DataKey::GoalList(treasury_id), &list);
+        Ok(id)
+    }
+
