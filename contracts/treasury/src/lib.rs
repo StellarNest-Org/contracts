@@ -603,3 +603,16 @@ impl TreasuryContract {
         let mut treasury = load_treasury(&env, treasury_id)?;
         let mut vault = load_vault(&env, treasury_id)?;
 
+        if vault.claimed {
+            return Err(Error::VaultNotClaimable);
+        }
+
+        let now = env.ledger().sequence();
+        let time_lock_passed = now >= vault.time_lock_ledger;
+        let switch_expired = now >= vault.last_heartbeat_ledger + vault.dead_man_switch_period;
+        let enough_guardians = vault.guardian_approvals.len() >= vault.guardian_approvals_required;
+
+        if !((time_lock_passed || switch_expired) && enough_guardians) {
+            return Err(Error::VaultNotClaimable);
+        }
+
