@@ -297,3 +297,19 @@ impl TreasuryContract {
             .get(&DataKey::Withdrawal(withdrawal_id))
             .ok_or(Error::WithdrawalNotFound)?;
 
+        if withdrawal.executed {
+            return Err(Error::WithdrawalAlreadyExecuted);
+        }
+        let treasury = load_treasury(&env, withdrawal.treasury_id)?;
+        if treasury.frozen {
+            return Err(Error::TreasuryFrozen);
+        }
+        let member = load_member(&env, withdrawal.treasury_id, &approver)?;
+        if !member.role.can_approve() {
+            return Err(Error::NotAuthorized);
+        }
+        if withdrawal.approvals.contains(&approver) {
+            return Err(Error::AlreadyApproved);
+        }
+        withdrawal.approvals.push_back(approver);
+
