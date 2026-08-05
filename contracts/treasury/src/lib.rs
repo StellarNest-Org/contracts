@@ -182,3 +182,21 @@ impl TreasuryContract {
     // Rules engine
     // ---------------------------------------------------------------
 
+    pub fn set_approval_rule(
+        env: Env,
+        treasury_id: u64,
+        caller: Address,
+        approval_threshold: i128,
+        required_approvals: u32,
+    ) -> Result<(), Error> {
+        caller.require_auth();
+        let mut treasury = load_treasury(&env, treasury_id)?;
+        require_role(&env, &treasury, &caller, Role::can_administer)?;
+        treasury.approval_threshold = approval_threshold;
+        treasury.required_approvals = required_approvals.max(1);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Treasury(treasury_id), &treasury);
+        Ok(())
+    }
+
