@@ -228,3 +228,19 @@ fn bill_pays_only_when_due() {
     mint(&env, &asset, &owner, 10_000);
     client.deposit(&id, &owner, &10_000);
 
+    let bill_id = client.create_bill(
+        &id,
+        &owner,
+        &String::from_str(&env, "Rent"),
+        &payee,
+        &1_000,
+        &100,
+    );
+
+    let result = client.try_pay_bill(&bill_id);
+    assert_eq!(result, Err(Ok(Error::BillNotDue)));
+
+    env.ledger().with_mut(|l| l.sequence_number += 200);
+    client.pay_bill(&bill_id);
+    assert_eq!(balance_of(&env, &asset, &payee), 1_000);
+
