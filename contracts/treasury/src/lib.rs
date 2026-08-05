@@ -483,3 +483,19 @@ impl TreasuryContract {
         Ok(())
     }
 
+    pub fn cancel_bill(env: Env, bill_id: u64, caller: Address) -> Result<(), Error> {
+        caller.require_auth();
+        let mut bill: Bill = env
+            .storage()
+            .persistent()
+            .get(&DataKey::Bill(bill_id))
+            .ok_or(Error::BillNotFound)?;
+        let treasury = load_treasury(&env, bill.treasury_id)?;
+        require_role(&env, &treasury, &caller, Role::can_administer)?;
+        bill.active = false;
+        env.storage()
+            .persistent()
+            .set(&DataKey::Bill(bill_id), &bill);
+        Ok(())
+    }
+
