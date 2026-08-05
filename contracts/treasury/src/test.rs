@@ -178,3 +178,12 @@ fn frozen_treasury_blocks_withdrawals() {
     mint(&env, &asset, &owner, 10_000);
     client.deposit(&id, &owner, &10_000);
 
+    client.freeze_treasury(&id, &owner);
+    let result = client.try_request_withdrawal(&id, &owner, &to, &50);
+    assert_eq!(result, Err(Ok(Error::TreasuryFrozen)));
+
+    client.unfreeze_treasury(&id, &owner);
+    let withdrawal_id = client.request_withdrawal(&id, &owner, &to, &50);
+    assert!(client.get_withdrawal(&withdrawal_id).executed);
+}
+
