@@ -95,3 +95,15 @@ impl TreasuryContract {
     // Members & roles
     // ---------------------------------------------------------------
 
+    pub fn add_member(
+        env: Env,
+        treasury_id: u64,
+        caller: Address,
+        member: Address,
+        role: Role,
+        spending_limit: Option<i128>,
+    ) -> Result<(), Error> {
+        caller.require_auth();
+        let treasury = load_treasury(&env, treasury_id)?;
+        require_role(&env, &treasury, &caller, Role::can_administer)?;
+
