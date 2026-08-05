@@ -80,3 +80,18 @@ impl TreasuryContract {
         Ok(())
     }
 
+    pub fn unfreeze_treasury(env: Env, treasury_id: u64, caller: Address) -> Result<(), Error> {
+        caller.require_auth();
+        let mut treasury = load_treasury(&env, treasury_id)?;
+        require_role(&env, &treasury, &caller, Role::can_administer)?;
+        treasury.frozen = false;
+        env.storage()
+            .persistent()
+            .set(&DataKey::Treasury(treasury_id), &treasury);
+        Ok(())
+    }
+
+    // ---------------------------------------------------------------
+    // Members & roles
+    // ---------------------------------------------------------------
+
