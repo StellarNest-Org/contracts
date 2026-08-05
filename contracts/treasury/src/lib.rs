@@ -107,3 +107,20 @@ impl TreasuryContract {
         let treasury = load_treasury(&env, treasury_id)?;
         require_role(&env, &treasury, &caller, Role::can_administer)?;
 
+        if env
+            .storage()
+            .persistent()
+            .has(&DataKey::Member(treasury_id, member.clone()))
+        {
+            return Err(Error::MemberAlreadyExists);
+        }
+
+        let record = Member {
+            role,
+            spending_limit,
+            joined_at: env.ledger().timestamp(),
+        };
+        env.storage()
+            .persistent()
+            .set(&DataKey::Member(treasury_id, member.clone()), &record);
+
