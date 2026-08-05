@@ -673,3 +673,20 @@ fn load_vault(env: &Env, treasury_id: u64) -> Result<InheritanceVault, Error> {
         .ok_or(Error::VaultNotFound)
 }
 
+fn require_role(
+    env: &Env,
+    treasury: &Treasury,
+    caller: &Address,
+    predicate: impl Fn(&Role) -> bool,
+) -> Result<(), Error> {
+    if caller == &treasury.owner {
+        return Ok(());
+    }
+    let member = load_member(env, treasury.id, caller)?;
+    if predicate(&member.role) {
+        Ok(())
+    } else {
+        Err(Error::NotAuthorized)
+    }
+}
+
