@@ -616,3 +616,14 @@ impl TreasuryContract {
             return Err(Error::VaultNotClaimable);
         }
 
+        let token_client = token::Client::new(&env, &treasury.asset);
+        let total = treasury.balance;
+        for b in vault.beneficiaries.iter() {
+            let share = (total * b.allocation_bps as i128) / 10_000;
+            if share > 0 {
+                token_client.transfer(&env.current_contract_address(), &b.address, &share);
+            }
+        }
+        treasury.balance = 0;
+        vault.claimed = true;
+
