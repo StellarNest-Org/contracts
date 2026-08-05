@@ -558,3 +558,17 @@ impl TreasuryContract {
         Ok(())
     }
 
+    /// The owner calls this periodically to prove they're active and reset the dead-man switch.
+    pub fn heartbeat(env: Env, treasury_id: u64, caller: Address) -> Result<(), Error> {
+        caller.require_auth();
+        let treasury = load_treasury(&env, treasury_id)?;
+        require_role(&env, &treasury, &caller, |r| matches!(r, Role::Owner))?;
+
+        let mut vault = load_vault(&env, treasury_id)?;
+        vault.last_heartbeat_ledger = env.ledger().sequence();
+        env.storage()
+            .persistent()
+            .set(&DataKey::Vault(treasury_id), &vault);
+        Ok(())
+    }
+
