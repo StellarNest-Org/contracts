@@ -245,3 +245,46 @@ Auto-incrementing ids (`NextTreasuryId`, `NextGoalId`, `NextBillId`,
 `NextWithdrawalId`) live in **instance** storage since they're accessed on
 almost every write and are small, contract-wide counters.
 
+## A walkthrough: the Adeyemi family treasury
+
+A concrete sequence of calls, matching the scenario used throughout the
+test suite:
+
+```text
+1. create_treasury(owner=Amara, name="Adeyemi Family", asset=USDC_SAC,
+                    approval_threshold=1000, required_approvals=2)
+   -> treasury_id = 1, Amara registered as Owner
+
+2. add_member(1, Amara, Chidi, role=Parent, spending_limit=None)
+   add_member(1, Amara, Zainab, role=Child, spending_limit=Some(50))
+   add_member(1, Amara, UncleTunde, role=Guardian, spending_limit=None)
+
+3. deposit(1, Amara, 10_000)
+   -> treasury balance = 10,000
+
+4. request_withdrawal(1, Zainab, to=ShopAddress, amount=30)
+   -> 30 < spending_limit(50) and < approval_threshold(1000)
+   -> executes immediately, balance = 9,970
+
+5. request_withdrawal(1, Amara, to=Landlord, amount=1250)
+   -> 1250 >= approval_threshold -> pending Withdrawal #1, balance unchanged
+
+6. approve_withdrawal(1, Amara)   -> 1 of 2 approvals
+   approve_withdrawal(1, Chidi)   -> 2 of 2 -> executes, balance = 8,720
+
+7. create_savings_goal(1, Amara, "Emergency Fund", target_amount=5000)
+   contribute_to_goal(goal_id, Chidi, 500)
+
+8. create_inheritance_vault(1, Amara,
+     beneficiaries=[(Zainab, 5000), (Kene, 5000)],  // 50/50, sums to 10,000
+     time_lock_ledger=..., dead_man_switch_period=..., guardian_approvals_required=1)
+
+9. heartbeat(1, Amara)   // Amara checks in periodically to reset the switch
+
+   -- years later, no heartbeat --
+   approve_inheritance_claim(1, UncleTunde)
+   claim_inheritance(1, UncleTunde)
+   -> dead-man switch expired + 1 guardian approval -> vault distributes
+      50% to Zainab, 50% to Kene, treasury balance -> 0
+```
+
