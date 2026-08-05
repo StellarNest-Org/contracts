@@ -368,3 +368,26 @@ fn non_administrator_cannot_add_members() {
     assert_eq!(result, Err(Ok(Error::NotAuthorized)));
 }
 
+#[test]
+fn cancelled_bill_cannot_be_paid() {
+    let (env, client, asset) = setup();
+    let owner = Address::generate(&env);
+    let payee = Address::generate(&env);
+    let id = client.create_treasury(
+        &owner,
+        &String::from_str(&env, "Family"),
+        &asset,
+        &1_000,
+        &2,
+    );
+    mint(&env, &asset, &owner, 1_000);
+    client.deposit(&id, &owner, &1_000);
+    let bill_id = client.create_bill(
+        &id,
+        &owner,
+        &String::from_str(&env, "Internet"),
+        &payee,
+        &100,
+        &10,
+    );
+
