@@ -215,3 +215,33 @@ surfaces as a structured error code to callers, not a panic string:
 `VaultAlreadyExists`, `VaultNotClaimable`, `InvalidAllocation`,
 `InvalidAmount`, `SpendingLimitExceeded`.
 
+## Storage layout
+
+Soroban gives a contract three storage "buckets," each with different
+cost and lifetime tradeoffs: **instance** storage (cheap, tied to the
+contract itself, good for small contract-wide values), **persistent**
+storage (the default for real data — it sticks around until explicitly
+removed, at a storage-rent cost proportional to how long you keep it),
+and **temporary** storage (cheapest, but can expire and disappear — not
+used in this contract, since treasury data obviously shouldn't vanish).
+
+Everything a family actually cares about is stored in **persistent**
+storage keyed by a `DataKey` enum (`contracts/treasury/src/types.rs`),
+namespaced by id so unrelated treasuries never collide:
+
+```
+DataKey::Treasury(treasury_id)          -> Treasury
+DataKey::Member(treasury_id, address)   -> Member
+DataKey::MemberList(treasury_id)        -> Vec<Address>
+DataKey::Goal(goal_id)                  -> SavingsGoal
+DataKey::GoalList(treasury_id)          -> Vec<u64>
+DataKey::Bill(bill_id)                  -> Bill
+DataKey::BillList(treasury_id)          -> Vec<u64>
+DataKey::Withdrawal(withdrawal_id)      -> Withdrawal
+DataKey::Vault(treasury_id)             -> InheritanceVault
+```
+
+Auto-incrementing ids (`NextTreasuryId`, `NextGoalId`, `NextBillId`,
+`NextWithdrawalId`) live in **instance** storage since they're accessed on
+almost every write and are small, contract-wide counters.
+
