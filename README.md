@@ -370,3 +370,13 @@ argument for other networks. See `scripts/deploy.sh` for the exact
   identity, so a cron job or a beneficiary can trigger them without being
   granted any special privilege.
 
+## Contributing
+
+Issues and PRs are welcome. Before opening a PR: run `cargo fmt --all`,
+`cargo test --workspace`, and make sure `cargo build --target
+wasm32v1-none --release --workspace` still succeeds. See
+[`StellarNest-Org/backend`](https://github.com/StellarNest-Org/backend)
+for how the API builds unsigned XDR against this contract and hands it to
+the client for signing, and
+[`StellarNest-Org/frontend`](https://github.com/StellarNest-Org/frontend)
+for the product surface built on top of it.
