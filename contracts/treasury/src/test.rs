@@ -333,3 +333,19 @@ fn heartbeat_resets_dead_man_switch() {
     mint(&env, &asset, &owner, 1_000);
     client.deposit(&id, &owner, &1_000);
 
+    let mut beneficiaries = Vec::new(&env);
+    beneficiaries.push_back(Beneficiary {
+        address: child,
+        allocation_bps: 10_000,
+    });
+    client.create_inheritance_vault(&id, &owner, &beneficiaries, &100_000_000, &1_000, &1);
+
+    env.ledger().with_mut(|l| l.sequence_number += 500);
+    client.heartbeat(&id, &owner);
+    client.approve_inheritance_claim(&id, &guardian);
+
+    env.ledger().with_mut(|l| l.sequence_number += 500);
+    let result = client.try_claim_inheritance(&id, &guardian);
+    assert_eq!(result, Err(Ok(Error::VaultNotClaimable)));
+}
+
