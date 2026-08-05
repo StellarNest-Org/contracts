@@ -373,3 +373,20 @@ impl TreasuryContract {
         Ok(id)
     }
 
+    pub fn contribute_to_goal(
+        env: Env,
+        goal_id: u64,
+        from: Address,
+        amount: i128,
+    ) -> Result<(), Error> {
+        from.require_auth();
+        if amount <= 0 {
+            return Err(Error::InvalidAmount);
+        }
+        let mut goal: SavingsGoal = env
+            .storage()
+            .persistent()
+            .get(&DataKey::Goal(goal_id))
+            .ok_or(Error::GoalNotFound)?;
+        let mut treasury = load_treasury(&env, goal.treasury_id)?;
+
