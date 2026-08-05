@@ -390,3 +390,18 @@ impl TreasuryContract {
             .ok_or(Error::GoalNotFound)?;
         let mut treasury = load_treasury(&env, goal.treasury_id)?;
 
+        let token_client = token::Client::new(&env, &treasury.asset);
+        token_client.transfer(&from, &env.current_contract_address(), &amount);
+
+        treasury.balance += amount;
+        goal.current_amount += amount;
+
+        env.storage()
+            .persistent()
+            .set(&DataKey::Treasury(goal.treasury_id), &treasury);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Goal(goal_id), &goal);
+        Ok(())
+    }
+
