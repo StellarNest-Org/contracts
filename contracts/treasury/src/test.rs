@@ -163,3 +163,18 @@ fn spending_limit_enforced_for_child() {
     assert!(client.get_withdrawal(&withdrawal_id).executed);
 }
 
+#[test]
+fn frozen_treasury_blocks_withdrawals() {
+    let (env, client, asset) = setup();
+    let owner = Address::generate(&env);
+    let to = Address::generate(&env);
+    let id = client.create_treasury(
+        &owner,
+        &String::from_str(&env, "Family"),
+        &asset,
+        &1_000,
+        &2,
+    );
+    mint(&env, &asset, &owner, 10_000);
+    client.deposit(&id, &owner, &10_000);
+
