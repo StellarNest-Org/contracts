@@ -254,3 +254,34 @@ impl TreasuryContract {
 
         let id = next_id(&env, &DataKey::NextWithdrawalId);
 
+        if amount < treasury.approval_threshold {
+            execute_transfer(&env, treasury_id, &to, amount)?;
+            let record = Withdrawal {
+                id,
+                treasury_id,
+                requested_by: caller,
+                to,
+                amount,
+                approvals: Vec::new(&env),
+                executed: true,
+            };
+            env.storage()
+                .persistent()
+                .set(&DataKey::Withdrawal(id), &record);
+        } else {
+            let record = Withdrawal {
+                id,
+                treasury_id,
+                requested_by: caller,
+                to,
+                amount,
+                approvals: Vec::new(&env),
+                executed: false,
+            };
+            env.storage()
+                .persistent()
+                .set(&DataKey::Withdrawal(id), &record);
+        }
+        Ok(id)
+    }
+
