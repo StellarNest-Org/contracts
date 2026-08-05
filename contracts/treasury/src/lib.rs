@@ -350,3 +350,14 @@ impl TreasuryContract {
         let treasury = load_treasury(&env, treasury_id)?;
         require_role(&env, &treasury, &caller, Role::can_administer)?;
 
+        let id = next_id(&env, &DataKey::NextGoalId);
+        let goal = SavingsGoal {
+            id,
+            treasury_id,
+            name,
+            target_amount,
+            current_amount: 0,
+            created_at: env.ledger().timestamp(),
+        };
+        env.storage().persistent().set(&DataKey::Goal(id), &goal);
+
