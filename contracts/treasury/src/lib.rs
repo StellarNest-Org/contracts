@@ -517,3 +517,20 @@ impl TreasuryContract {
     // Inheritance vault
     // ---------------------------------------------------------------
 
+    pub fn create_inheritance_vault(
+        env: Env,
+        treasury_id: u64,
+        caller: Address,
+        beneficiaries: Vec<types::Beneficiary>,
+        time_lock_ledger: u32,
+        dead_man_switch_period: u32,
+        guardian_approvals_required: u32,
+    ) -> Result<(), Error> {
+        caller.require_auth();
+        let treasury = load_treasury(&env, treasury_id)?;
+        require_role(&env, &treasury, &caller, |r| matches!(r, Role::Owner))?;
+
+        if env.storage().persistent().has(&DataKey::Vault(treasury_id)) {
+            return Err(Error::VaultAlreadyExists);
+        }
+
