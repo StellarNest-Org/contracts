@@ -104,3 +104,18 @@ fn large_withdrawal_requires_approvals() {
     mint(&env, &asset, &owner, 10_000);
     client.deposit(&id, &owner, &10_000);
 
+    let withdrawal_id = client.request_withdrawal(&id, &owner, &to, &5_000);
+    let pending = client.get_withdrawal(&withdrawal_id);
+    assert!(!pending.executed);
+    assert_eq!(balance_of(&env, &asset, &to), 0);
+
+    client.approve_withdrawal(&withdrawal_id, &owner);
+    let still_pending = client.get_withdrawal(&withdrawal_id);
+    assert!(!still_pending.executed);
+
+    client.approve_withdrawal(&withdrawal_id, &parent2);
+    let done = client.get_withdrawal(&withdrawal_id);
+    assert!(done.executed);
+    assert_eq!(balance_of(&env, &asset, &to), 5_000);
+}
+
