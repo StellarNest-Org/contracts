@@ -139,3 +139,20 @@ fn double_approval_rejected() {
     assert_eq!(result, Err(Ok(Error::AlreadyApproved)));
 }
 
+#[test]
+fn spending_limit_enforced_for_child() {
+    let (env, client, asset) = setup();
+    let owner = Address::generate(&env);
+    let child = Address::generate(&env);
+    let to = Address::generate(&env);
+    let id = client.create_treasury(
+        &owner,
+        &String::from_str(&env, "Family"),
+        &asset,
+        &1_000,
+        &2,
+    );
+    client.add_member(&id, &owner, &child, &crate::types::Role::Child, &Some(100));
+    mint(&env, &asset, &owner, 10_000);
+    client.deposit(&id, &owner, &10_000);
+
