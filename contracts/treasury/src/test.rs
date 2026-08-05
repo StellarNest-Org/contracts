@@ -76,3 +76,13 @@ fn small_withdrawal_executes_immediately() {
         &2,
     );
 
+    mint(&env, &asset, &owner, 5_000);
+    client.deposit(&id, &owner, &5_000);
+
+    let withdrawal_id = client.request_withdrawal(&id, &owner, &child, &500);
+    let withdrawal = client.get_withdrawal(&withdrawal_id);
+    assert!(withdrawal.executed);
+    assert_eq!(balance_of(&env, &asset, &child), 500);
+    assert_eq!(client.get_treasury(&id).balance, 4_500);
+}
+
