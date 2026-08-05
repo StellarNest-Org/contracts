@@ -119,3 +119,23 @@ fn large_withdrawal_requires_approvals() {
     assert_eq!(balance_of(&env, &asset, &to), 5_000);
 }
 
+#[test]
+fn double_approval_rejected() {
+    let (env, client, asset) = setup();
+    let owner = Address::generate(&env);
+    let to = Address::generate(&env);
+    let id = client.create_treasury(
+        &owner,
+        &String::from_str(&env, "Family"),
+        &asset,
+        &1_000,
+        &2,
+    );
+    mint(&env, &asset, &owner, 10_000);
+    client.deposit(&id, &owner, &10_000);
+    let withdrawal_id = client.request_withdrawal(&id, &owner, &to, &5_000);
+    client.approve_withdrawal(&withdrawal_id, &owner);
+    let result = client.try_approve_withdrawal(&withdrawal_id, &owner);
+    assert_eq!(result, Err(Ok(Error::AlreadyApproved)));
+}
+
