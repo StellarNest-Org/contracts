@@ -87,3 +87,10 @@ pub struct Withdrawal {
     pub executed: bool,
 }
 
+#[contracttype]
+#[derive(Clone, Debug)]
+pub struct Beneficiary {
+    pub address: Address,
+    pub allocation_bps: u32,
+}
+
