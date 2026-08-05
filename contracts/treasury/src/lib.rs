@@ -627,3 +627,21 @@ impl TreasuryContract {
         treasury.balance = 0;
         vault.claimed = true;
 
+        env.storage()
+            .persistent()
+            .set(&DataKey::Treasury(treasury_id), &treasury);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Vault(treasury_id), &vault);
+        Ok(())
+    }
+
+    pub fn get_inheritance_vault(env: Env, treasury_id: u64) -> Result<InheritanceVault, Error> {
+        load_vault(&env, treasury_id)
+    }
+}
+
+// ---------------------------------------------------------------
+// Internal helpers
+// ---------------------------------------------------------------
+
