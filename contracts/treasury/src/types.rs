@@ -107,3 +107,19 @@ pub struct InheritanceVault {
     pub claimed: bool,
 }
 
+#[contracttype]
+pub enum DataKey {
+    NextTreasuryId,
+    NextGoalId,
+    NextBillId,
+    NextWithdrawalId,
+    Treasury(u64),
+    Member(u64, Address),
+    MemberList(u64),
+    Goal(u64),
+    GoalList(u64),
+    Bill(u64),
+    BillList(u64),
+    Withdrawal(u64),
+    Vault(u64),
+}
