@@ -645,3 +645,17 @@ impl TreasuryContract {
 // Internal helpers
 // ---------------------------------------------------------------
 
+fn next_id(env: &Env, key: &DataKey) -> u64 {
+    let current: u64 = env.storage().instance().get(key).unwrap_or(0);
+    let next = current + 1;
+    env.storage().instance().set(key, &next);
+    next
+}
+
+fn load_treasury(env: &Env, treasury_id: u64) -> Result<Treasury, Error> {
+    env.storage()
+        .persistent()
+        .get(&DataKey::Treasury(treasury_id))
+        .ok_or(Error::TreasuryNotFound)
+}
+
