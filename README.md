@@ -288,3 +288,31 @@ test suite:
       50% to Zainab, 50% to Kene, treasury balance -> 0
 ```
 
+## Development
+
+Requires the [Stellar CLI](https://developers.stellar.org/docs/tools/cli)
+and the `wasm32v1-none` Rust target. Soroban contracts compile to
+**WebAssembly (wasm)** — a small, sandboxed binary format — rather than
+native machine code, which is what makes it safe for a public network to
+run arbitrary contracts from anyone without those contracts being able
+to touch the host machine directly. `wasm32v1-none` is the specific,
+minimal wasm target Soroban expects (no OS, no filesystem — just the
+contract's logic):
+
+```bash
+rustup target add wasm32v1-none
+```
+
+```bash
+# run the full test suite (unit tests, in-memory Soroban Env)
+cargo test --workspace
+
+# format & lint
+cargo fmt --all
+cargo build --workspace          # native build, fastest feedback loop
+
+# build the deployable wasm artifact
+stellar contract build
+# equivalent to: cargo build --target wasm32v1-none --release -p treasury
+```
+
