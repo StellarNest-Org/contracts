@@ -44,3 +44,18 @@ fn create_treasury_registers_owner() {
     assert_eq!(members.len(), 1);
 }
 
+#[test]
+fn deposit_increases_balance() {
+    let (env, client, asset) = setup();
+    let owner = Address::generate(&env);
+    let id = client.create_treasury(
+        &owner,
+        &String::from_str(&env, "Family"),
+        &asset,
+        &1_000,
+        &2,
+    );
+
+    mint(&env, &asset, &owner, 5_000);
+    client.deposit(&id, &owner, &2_000);
+
