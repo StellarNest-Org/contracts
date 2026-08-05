@@ -205,3 +205,11 @@ fn savings_goal_progress_tracks_contributions() {
         &1_000,
     );
 
+    mint(&env, &asset, &owner, 1_000);
+    client.contribute_to_goal(&goal_id, &owner, &400);
+
+    let goal = client.get_savings_goal(&goal_id);
+    assert_eq!(goal.current_amount, 400);
+    assert_eq!(client.get_treasury(&id).balance, 400);
+}
+
