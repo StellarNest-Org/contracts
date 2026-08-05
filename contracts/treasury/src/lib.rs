@@ -542,3 +542,19 @@ impl TreasuryContract {
             return Err(Error::InvalidAllocation);
         }
 
+        let vault = InheritanceVault {
+            treasury_id,
+            beneficiaries,
+            time_lock_ledger,
+            dead_man_switch_period,
+            last_heartbeat_ledger: env.ledger().sequence(),
+            guardian_approvals_required,
+            guardian_approvals: Vec::new(&env),
+            claimed: false,
+        };
+        env.storage()
+            .persistent()
+            .set(&DataKey::Vault(treasury_id), &vault);
+        Ok(())
+    }
+
