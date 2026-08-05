@@ -200,3 +200,17 @@ impl TreasuryContract {
         Ok(())
     }
 
+    // ---------------------------------------------------------------
+    // Deposits & withdrawals
+    // ---------------------------------------------------------------
+
+    pub fn deposit(env: Env, treasury_id: u64, from: Address, amount: i128) -> Result<(), Error> {
+        from.require_auth();
+        if amount <= 0 {
+            return Err(Error::InvalidAmount);
+        }
+        let mut treasury = load_treasury(&env, treasury_id)?;
+
+        let token_client = token::Client::new(&env, &treasury.asset);
+        token_client.transfer(&from, &env.current_contract_address(), &amount);
+
