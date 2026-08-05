@@ -349,3 +349,18 @@ fn heartbeat_resets_dead_man_switch() {
     assert_eq!(result, Err(Ok(Error::VaultNotClaimable)));
 }
 
+#[test]
+fn non_administrator_cannot_add_members() {
+    let (env, client, asset) = setup();
+    let owner = Address::generate(&env);
+    let viewer = Address::generate(&env);
+    let stranger = Address::generate(&env);
+    let id = client.create_treasury(
+        &owner,
+        &String::from_str(&env, "Family"),
+        &asset,
+        &1_000,
+        &2,
+    );
+    client.add_member(&id, &owner, &viewer, &crate::types::Role::Viewer, &None);
+
