@@ -51,3 +51,14 @@ pub struct Treasury {
     pub created_at: u64,
 }
 
+#[contracttype]
+#[derive(Clone, Debug)]
+pub struct SavingsGoal {
+    pub id: u64,
+    pub treasury_id: u64,
+    pub name: String,
+    pub target_amount: i128,
+    pub current_amount: i128,
+    pub created_at: u64,
+}
+
