@@ -202,3 +202,16 @@ Soroban, so the caller is always passed and authenticated explicitly.
 | `claim_inheritance(treasury_id, caller)` | any | Distributes the full treasury balance pro-rata, **only if** `(time_lock passed OR dead-man switch expired) AND enough guardian approvals`. |
 | `get_inheritance_vault(treasury_id)` | none | Read-only. |
 
+## Errors
+
+All fallible methods return `Result<T, Error>`. `Error` (in
+`contracts/treasury/src/errors.rs`) is a `#[contracterror]` enum so it
+surfaces as a structured error code to callers, not a panic string:
+
+`NotAuthorized`, `TreasuryNotFound`, `MemberNotFound`,
+`MemberAlreadyExists`, `InsufficientBalance`, `TreasuryFrozen`,
+`GoalNotFound`, `BillNotFound`, `BillNotDue`, `WithdrawalNotFound`,
+`AlreadyApproved`, `WithdrawalAlreadyExecuted`, `VaultNotFound`,
+`VaultAlreadyExists`, `VaultNotClaimable`, `InvalidAllocation`,
+`InvalidAmount`, `SpendingLimitExceeded`.
+
