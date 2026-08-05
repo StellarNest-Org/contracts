@@ -305,3 +305,14 @@ fn inheritance_claim_distributes_after_dead_man_switch() {
     let too_early = client.try_claim_inheritance(&id, &guardian);
     assert_eq!(too_early, Err(Ok(Error::VaultNotClaimable)));
 
+    client.approve_inheritance_claim(&id, &guardian);
+    env.ledger().with_mut(|l| l.sequence_number += 2_000);
+
+    client.claim_inheritance(&id, &guardian);
+
+    assert_eq!(balance_of(&env, &asset, &child1), 7_000);
+    assert_eq!(balance_of(&env, &asset, &child2), 3_000);
+    assert_eq!(client.get_treasury(&id).balance, 0);
+    assert!(client.get_inheritance_vault(&id).claimed);
+}
+
