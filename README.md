@@ -93,3 +93,14 @@ mostly what a Soroban contract is: a small, extremely strict backend
 that happens to run somewhere nobody (not even its author) can quietly
 edit it.
 
+## Why a smart contract, not just a database
+
+A rule that lives in application code is a rule someone can quietly change
+— an engineer under pressure, a compromised admin panel, a support ticket
+that "just this once" bypasses the approval flow. A rule enforced by a
+Soroban contract can't be: the contract checks the approval threshold,
+the spending limit, and the freeze state *before it will move a single
+token*, regardless of what the backend or frontend tell it to do. That
+property — rules even StellarNest itself can't override — is the whole
+reason this is a contract and not just a Postgres table.
+
