@@ -28,3 +28,12 @@ impl Role {
     }
 }
 
+#[contracttype]
+#[derive(Clone, Debug)]
+pub struct Member {
+    pub role: Role,
+    /// Per-period spending limit in the treasury's default asset. None = unlimited (subject to rules).
+    pub spending_limit: Option<i128>,
+    pub joined_at: u64,
+}
+
