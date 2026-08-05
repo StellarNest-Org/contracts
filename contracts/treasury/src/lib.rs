@@ -313,3 +313,18 @@ impl TreasuryContract {
         }
         withdrawal.approvals.push_back(approver);
 
+        if withdrawal.approvals.len() >= treasury.required_approvals {
+            execute_transfer(
+                &env,
+                withdrawal.treasury_id,
+                &withdrawal.to,
+                withdrawal.amount,
+            )?;
+            withdrawal.executed = true;
+        }
+        env.storage()
+            .persistent()
+            .set(&DataKey::Withdrawal(withdrawal_id), &withdrawal);
+        Ok(())
+    }
+
