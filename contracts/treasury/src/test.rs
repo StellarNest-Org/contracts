@@ -244,3 +244,20 @@ fn bill_pays_only_when_due() {
     client.pay_bill(&bill_id);
     assert_eq!(balance_of(&env, &asset, &payee), 1_000);
 
+    let bill = client.get_bill(&bill_id);
+    assert!(bill.next_due_ledger > env.ledger().sequence());
+}
+
+#[test]
+fn inheritance_vault_requires_allocation_sum_to_10000_bps() {
+    let (env, client, asset) = setup();
+    let owner = Address::generate(&env);
+    let child = Address::generate(&env);
+    let id = client.create_treasury(
+        &owner,
+        &String::from_str(&env, "Family"),
+        &asset,
+        &1_000,
+        &2,
+    );
+
