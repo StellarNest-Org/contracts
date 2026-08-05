@@ -391,3 +391,8 @@ fn cancelled_bill_cannot_be_paid() {
         &10,
     );
 
+    client.cancel_bill(&bill_id, &owner);
+    env.ledger().with_mut(|l| l.sequence_number += 100);
+    let result = client.try_pay_bill(&bill_id);
+    assert_eq!(result, Err(Ok(Error::BillNotFound)));
+}
