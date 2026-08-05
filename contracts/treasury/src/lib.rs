@@ -63,3 +63,20 @@ impl TreasuryContract {
         id
     }
 
+    pub fn get_treasury(env: Env, treasury_id: u64) -> Result<Treasury, Error> {
+        load_treasury(&env, treasury_id)
+    }
+
+    pub fn freeze_treasury(env: Env, treasury_id: u64, caller: Address) -> Result<(), Error> {
+        caller.require_auth();
+        let mut treasury = load_treasury(&env, treasury_id)?;
+        require_role(&env, &treasury, &caller, |r| {
+            r.can_administer() || matches!(r, Role::Guardian)
+        })?;
+        treasury.frozen = true;
+        env.storage()
+            .persistent()
+            .set(&DataKey::Treasury(treasury_id), &treasury);
+        Ok(())
+    }
+
