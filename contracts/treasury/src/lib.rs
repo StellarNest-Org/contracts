@@ -31,3 +31,19 @@ impl TreasuryContract {
     ) -> u64 {
         owner.require_auth();
 
+        let id = next_id(&env, &DataKey::NextTreasuryId);
+        let treasury = Treasury {
+            id,
+            name,
+            owner: owner.clone(),
+            asset,
+            balance: 0,
+            frozen: false,
+            approval_threshold,
+            required_approvals: required_approvals.max(1),
+            created_at: env.ledger().timestamp(),
+        };
+        env.storage()
+            .persistent()
+            .set(&DataKey::Treasury(id), &treasury);
+
