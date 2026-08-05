@@ -316,3 +316,20 @@ fn inheritance_claim_distributes_after_dead_man_switch() {
     assert!(client.get_inheritance_vault(&id).claimed);
 }
 
+#[test]
+fn heartbeat_resets_dead_man_switch() {
+    let (env, client, asset) = setup();
+    let owner = Address::generate(&env);
+    let guardian = Address::generate(&env);
+    let child = Address::generate(&env);
+    let id = client.create_treasury(
+        &owner,
+        &String::from_str(&env, "Family"),
+        &asset,
+        &1_000_000,
+        &5,
+    );
+    client.add_member(&id, &owner, &guardian, &crate::types::Role::Guardian, &None);
+    mint(&env, &asset, &owner, 1_000);
+    client.deposit(&id, &owner, &1_000);
+
