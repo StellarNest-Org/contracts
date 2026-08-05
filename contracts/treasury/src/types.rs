@@ -37,3 +37,17 @@ pub struct Member {
     pub joined_at: u64,
 }
 
+#[contracttype]
+#[derive(Clone, Debug)]
+pub struct Treasury {
+    pub id: u64,
+    pub name: String,
+    pub owner: Address,
+    pub asset: Address,
+    pub balance: i128,
+    pub frozen: bool,
+    pub approval_threshold: i128,
+    pub required_approvals: u32,
+    pub created_at: u64,
+}
+
