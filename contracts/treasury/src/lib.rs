@@ -124,3 +124,15 @@ impl TreasuryContract {
             .persistent()
             .set(&DataKey::Member(treasury_id, member.clone()), &record);
 
+        let mut list: Vec<Address> = env
+            .storage()
+            .persistent()
+            .get(&DataKey::MemberList(treasury_id))
+            .unwrap_or_else(|| Vec::new(&env));
+        list.push_back(member);
+        env.storage()
+            .persistent()
+            .set(&DataKey::MemberList(treasury_id), &list);
+        Ok(())
+    }
+
