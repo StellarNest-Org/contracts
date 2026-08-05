@@ -62,3 +62,16 @@ pub struct SavingsGoal {
     pub created_at: u64,
 }
 
+#[contracttype]
+#[derive(Clone, Debug)]
+pub struct Bill {
+    pub id: u64,
+    pub treasury_id: u64,
+    pub name: String,
+    pub payee: Address,
+    pub amount: i128,
+    pub interval_ledgers: u32,
+    pub next_due_ledger: u32,
+    pub active: bool,
+}
+
