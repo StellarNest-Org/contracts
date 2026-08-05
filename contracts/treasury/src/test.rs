@@ -287,3 +287,21 @@ fn inheritance_claim_distributes_after_dead_man_switch() {
     );
     client.add_member(&id, &owner, &guardian, &crate::types::Role::Guardian, &None);
 
+    mint(&env, &asset, &owner, 10_000);
+    client.deposit(&id, &owner, &10_000);
+
+    let mut beneficiaries = Vec::new(&env);
+    beneficiaries.push_back(Beneficiary {
+        address: child1.clone(),
+        allocation_bps: 7_000,
+    });
+    beneficiaries.push_back(Beneficiary {
+        address: child2.clone(),
+        allocation_bps: 3_000,
+    });
+
+    client.create_inheritance_vault(&id, &owner, &beneficiaries, &100_000_000, &1_000, &1);
+
+    let too_early = client.try_claim_inheritance(&id, &guardian);
+    assert_eq!(too_early, Err(Ok(Error::VaultNotClaimable)));
+
