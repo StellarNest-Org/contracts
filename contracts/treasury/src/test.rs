@@ -26,3 +26,21 @@ fn balance_of(env: &Env, asset: &Address, who: &Address) -> i128 {
     token::Client::new(env, asset).balance(who)
 }
 
+#[test]
+fn create_treasury_registers_owner() {
+    let (env, client, asset) = setup();
+    let owner = Address::generate(&env);
+    let id = client.create_treasury(
+        &owner,
+        &String::from_str(&env, "Adeyemi Family"),
+        &asset,
+        &1_000,
+        &2,
+    );
+    let treasury = client.get_treasury(&id);
+    assert_eq!(treasury.owner, owner);
+    assert_eq!(treasury.balance, 0);
+    let members = client.list_members(&id);
+    assert_eq!(members.len(), 1);
+}
+
