@@ -221,3 +221,34 @@ impl TreasuryContract {
         Ok(())
     }
 
+    /// Request a withdrawal. If the amount is within the caller's spending limit and below the
+    /// treasury's approval threshold, it executes immediately. Otherwise it opens a pending
+    /// withdrawal that must collect `required_approvals` from Owner/Parent/Guardian members.
+    pub fn request_withdrawal(
+        env: Env,
+        treasury_id: u64,
+        caller: Address,
+        to: Address,
+        amount: i128,
+    ) -> Result<u64, Error> {
+        caller.require_auth();
+        if amount <= 0 {
+            return Err(Error::InvalidAmount);
+        }
+        let treasury = load_treasury(&env, treasury_id)?;
+        if treasury.frozen {
+            return Err(Error::TreasuryFrozen);
+        }
+        if treasury.balance < amount {
+            return Err(Error::InsufficientBalance);
+        }
+        let member = load_member(&env, treasury_id, &caller)?;
+        if !member.role.can_spend() {
+            return Err(Error::NotAuthorized);
+        }
+        if let Some(limit) = member.spending_limit {
+            if amount > limit {
+                return Err(Error::SpendingLimitExceeded);
+            }
+        }
+
