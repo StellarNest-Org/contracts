@@ -156,3 +156,10 @@ fn spending_limit_enforced_for_child() {
     mint(&env, &asset, &owner, 10_000);
     client.deposit(&id, &owner, &10_000);
 
+    let result = client.try_request_withdrawal(&id, &child, &to, &200);
+    assert_eq!(result, Err(Ok(Error::SpendingLimitExceeded)));
+
+    let withdrawal_id = client.request_withdrawal(&id, &child, &to, &50);
+    assert!(client.get_withdrawal(&withdrawal_id).executed);
+}
+
