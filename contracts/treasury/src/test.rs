@@ -15,3 +15,14 @@ fn setup() -> (Env, TreasuryContractClient<'static>, Address) {
     let sac_id = env.register_stellar_asset_contract_v2(asset_admin);
     let asset = sac_id.address();
 
+    (env, client, asset)
+}
+
+fn mint(env: &Env, asset: &Address, to: &Address, amount: i128) {
+    token::StellarAssetClient::new(env, asset).mint(to, &amount);
+}
+
+fn balance_of(env: &Env, asset: &Address, who: &Address) -> i128 {
+    token::Client::new(env, asset).balance(who)
+}
+
