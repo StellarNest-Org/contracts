@@ -271,3 +271,19 @@ fn inheritance_vault_requires_allocation_sum_to_10000_bps() {
     assert_eq!(result, Err(Ok(Error::InvalidAllocation)));
 }
 
+#[test]
+fn inheritance_claim_distributes_after_dead_man_switch() {
+    let (env, client, asset) = setup();
+    let owner = Address::generate(&env);
+    let guardian = Address::generate(&env);
+    let child1 = Address::generate(&env);
+    let child2 = Address::generate(&env);
+    let id = client.create_treasury(
+        &owner,
+        &String::from_str(&env, "Family"),
+        &asset,
+        &1_000_000,
+        &5,
+    );
+    client.add_member(&id, &owner, &guardian, &crate::types::Role::Guardian, &None);
+
