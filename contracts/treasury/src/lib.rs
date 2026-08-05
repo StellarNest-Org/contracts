@@ -499,3 +499,21 @@ impl TreasuryContract {
         Ok(())
     }
 
+    pub fn get_bill(env: Env, bill_id: u64) -> Result<Bill, Error> {
+        env.storage()
+            .persistent()
+            .get(&DataKey::Bill(bill_id))
+            .ok_or(Error::BillNotFound)
+    }
+
+    pub fn list_bills(env: Env, treasury_id: u64) -> Vec<u64> {
+        env.storage()
+            .persistent()
+            .get(&DataKey::BillList(treasury_id))
+            .unwrap_or_else(|| Vec::new(&env))
+    }
+
+    // ---------------------------------------------------------------
+    // Inheritance vault
+    // ---------------------------------------------------------------
+
