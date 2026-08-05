@@ -136,3 +136,69 @@ Roles map to permissions like this (see `Role::can_administer`,
 | Advisor | ❌ | ❌ | ✅ | |
 | Viewer | ❌ | ❌ | ❌ | Read-only |
 
+## Method reference
+
+All methods live on `TreasuryContract` in `contracts/treasury/src/lib.rs`.
+Every state-changing call takes an explicit `caller: Address` parameter
+and calls `caller.require_auth()` — there is no `msg.sender` equivalent in
+Soroban, so the caller is always passed and authenticated explicitly.
+
+**Treasury lifecycle**
+
+| Method | Auth | Description |
+|---|---|---|
+| `create_treasury(owner, name, asset, approval_threshold, required_approvals)` | `owner` | Creates a treasury, registers `owner` as its first `Owner` member. Returns the new `treasury_id`. |
+| `get_treasury(treasury_id)` | none | Read-only. |
+| `freeze_treasury(treasury_id, caller)` | Owner/Parent/Guardian | Blocks new withdrawals immediately. |
+| `unfreeze_treasury(treasury_id, caller)` | Owner/Parent | Re-enables withdrawals. |
+
+**Members & roles**
+
+| Method | Auth | Description |
+|---|---|---|
+| `add_member(treasury_id, caller, member, role, spending_limit)` | Owner/Parent | `spending_limit` is optional, meaningful mainly for `Child`. |
+| `remove_member(treasury_id, caller, member)` | Owner/Parent | Revokes access immediately. |
+| `get_member(treasury_id, member)` / `list_members(treasury_id)` | none | Read-only. |
+
+**Rules**
+
+| Method | Auth | Description |
+|---|---|---|
+| `set_approval_rule(treasury_id, caller, approval_threshold, required_approvals)` | Owner/Parent | Changes the rule for future withdrawals; doesn't affect ones already pending. |
+
+**Deposits & withdrawals**
+
+| Method | Auth | Description |
+|---|---|---|
+| `deposit(treasury_id, from, amount)` | `from` | Transfers `amount` of the treasury's asset from `from` into the contract. |
+| `request_withdrawal(treasury_id, caller, to, amount)` | caller must be able to spend | Executes immediately if `amount < approval_threshold` and within any spending limit; otherwise opens a pending `Withdrawal` and returns its id. |
+| `approve_withdrawal(withdrawal_id, approver)` | Owner/Parent/Guardian | Adds an approval; once `required_approvals` is reached, the transfer executes in the same call. |
+| `get_withdrawal(withdrawal_id)` | none | Read-only. |
+
+**Savings goals**
+
+| Method | Auth | Description |
+|---|---|---|
+| `create_savings_goal(treasury_id, caller, name, target_amount)` | Owner/Parent | Returns the new `goal_id`. |
+| `contribute_to_goal(goal_id, from, amount)` | `from` | Transfers into the contract, increments both the goal and the treasury balance. |
+| `get_savings_goal(goal_id)` / `list_savings_goals(treasury_id)` | none | Read-only. |
+
+**Bills**
+
+| Method | Auth | Description |
+|---|---|---|
+| `create_bill(treasury_id, caller, name, payee, amount, interval_ledgers)` | Owner/Parent | Schedules the first due date `interval_ledgers` from now. |
+| `pay_bill(bill_id)` | **none (permissionless)** | Only succeeds once `next_due_ledger` has passed; safe for a public relayer to call. |
+| `cancel_bill(bill_id, caller)` | Owner/Parent | Deactivates the bill. |
+| `get_bill(bill_id)` / `list_bills(treasury_id)` | none | Read-only. |
+
+**Inheritance vault**
+
+| Method | Auth | Description |
+|---|---|---|
+| `create_inheritance_vault(treasury_id, caller, beneficiaries, time_lock_ledger, dead_man_switch_period, guardian_approvals_required)` | Owner only | `beneficiaries`' `allocation_bps` must sum to exactly `10_000`. |
+| `heartbeat(treasury_id, caller)` | Owner only | Resets the dead-man switch clock. |
+| `approve_inheritance_claim(treasury_id, guardian)` | Guardian | Registers one guardian's approval toward `guardian_approvals_required`. |
+| `claim_inheritance(treasury_id, caller)` | any | Distributes the full treasury balance pro-rata, **only if** `(time_lock passed OR dead-man switch expired) AND enough guardian approvals`. |
+| `get_inheritance_vault(treasury_id)` | none | Read-only. |
+
