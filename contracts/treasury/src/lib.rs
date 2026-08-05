@@ -252,3 +252,5 @@ impl TreasuryContract {
             }
         }
 
+        let id = next_id(&env, &DataKey::NextWithdrawalId);
+
