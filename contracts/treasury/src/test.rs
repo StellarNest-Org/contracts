@@ -59,3 +59,20 @@ fn deposit_increases_balance() {
     mint(&env, &asset, &owner, 5_000);
     client.deposit(&id, &owner, &2_000);
 
+    let treasury = client.get_treasury(&id);
+    assert_eq!(treasury.balance, 2_000);
+}
+
+#[test]
+fn small_withdrawal_executes_immediately() {
+    let (env, client, asset) = setup();
+    let owner = Address::generate(&env);
+    let child = Address::generate(&env);
+    let id = client.create_treasury(
+        &owner,
+        &String::from_str(&env, "Family"),
+        &asset,
+        &1_000,
+        &2,
+    );
+
