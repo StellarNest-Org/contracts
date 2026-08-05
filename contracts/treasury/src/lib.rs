@@ -461,3 +461,25 @@ impl TreasuryContract {
         Ok(id)
     }
 
+    /// Executes a due bill. Callable by anyone (typically a relayer/cron), but only pays out if
+    /// the schedule says it's due, keeping payment timing on-chain and tamper-proof.
+    pub fn pay_bill(env: Env, bill_id: u64) -> Result<(), Error> {
+        let mut bill: Bill = env
+            .storage()
+            .persistent()
+            .get(&DataKey::Bill(bill_id))
+            .ok_or(Error::BillNotFound)?;
+        if !bill.active {
+            return Err(Error::BillNotFound);
+        }
+        if env.ledger().sequence() < bill.next_due_ledger {
+            return Err(Error::BillNotDue);
+        }
+        execute_transfer(&env, bill.treasury_id, &bill.payee, bill.amount)?;
+        bill.next_due_ledger = env.ledger().sequence() + bill.interval_ledgers;
+        env.storage()
+            .persistent()
+            .set(&DataKey::Bill(bill_id), &bill);
+        Ok(())
+    }
+
