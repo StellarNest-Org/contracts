@@ -328,3 +328,14 @@ impl TreasuryContract {
         Ok(())
     }
 
+    pub fn get_withdrawal(env: Env, withdrawal_id: u64) -> Result<Withdrawal, Error> {
+        env.storage()
+            .persistent()
+            .get(&DataKey::Withdrawal(withdrawal_id))
+            .ok_or(Error::WithdrawalNotFound)
+    }
+
+    // ---------------------------------------------------------------
+    // Savings goals
+    // ---------------------------------------------------------------
+
