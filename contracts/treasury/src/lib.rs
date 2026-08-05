@@ -150,3 +150,20 @@ impl TreasuryContract {
             .persistent()
             .remove(&DataKey::Member(treasury_id, member.clone()));
 
+        let list: Vec<Address> = env
+            .storage()
+            .persistent()
+            .get(&DataKey::MemberList(treasury_id))
+            .unwrap_or_else(|| Vec::new(&env));
+        let mut updated = Vec::new(&env);
+        for addr in list.iter() {
+            if addr != member {
+                updated.push_back(addr);
+            }
+        }
+        env.storage()
+            .persistent()
+            .set(&DataKey::MemberList(treasury_id), &updated);
+        Ok(())
+    }
+
