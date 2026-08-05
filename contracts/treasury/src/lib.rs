@@ -585,3 +585,21 @@ impl TreasuryContract {
         }
         let _ = treasury;
 
+        let mut vault = load_vault(&env, treasury_id)?;
+        if vault.guardian_approvals.contains(&guardian) {
+            return Err(Error::AlreadyApproved);
+        }
+        vault.guardian_approvals.push_back(guardian);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Vault(treasury_id), &vault);
+        Ok(())
+    }
+
+    /// Distributes the treasury balance to beneficiaries once either the time-lock has passed or
+    /// the dead-man switch has expired, and enough guardians have approved the claim.
+    pub fn claim_inheritance(env: Env, treasury_id: u64, caller: Address) -> Result<(), Error> {
+        caller.require_auth();
+        let mut treasury = load_treasury(&env, treasury_id)?;
+        let mut vault = load_vault(&env, treasury_id)?;
+
