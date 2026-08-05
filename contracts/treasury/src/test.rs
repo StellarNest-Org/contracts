@@ -86,3 +86,21 @@ fn small_withdrawal_executes_immediately() {
     assert_eq!(client.get_treasury(&id).balance, 4_500);
 }
 
+#[test]
+fn large_withdrawal_requires_approvals() {
+    let (env, client, asset) = setup();
+    let owner = Address::generate(&env);
+    let parent2 = Address::generate(&env);
+    let to = Address::generate(&env);
+    let id = client.create_treasury(
+        &owner,
+        &String::from_str(&env, "Family"),
+        &asset,
+        &1_000,
+        &2,
+    );
+    client.add_member(&id, &owner, &parent2, &crate::types::Role::Parent, &None);
+
+    mint(&env, &asset, &owner, 10_000);
+    client.deposit(&id, &owner, &10_000);
+
