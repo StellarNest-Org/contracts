@@ -405,3 +405,21 @@ impl TreasuryContract {
         Ok(())
     }
 
+    pub fn get_savings_goal(env: Env, goal_id: u64) -> Result<SavingsGoal, Error> {
+        env.storage()
+            .persistent()
+            .get(&DataKey::Goal(goal_id))
+            .ok_or(Error::GoalNotFound)
+    }
+
+    pub fn list_savings_goals(env: Env, treasury_id: u64) -> Vec<u64> {
+        env.storage()
+            .persistent()
+            .get(&DataKey::GoalList(treasury_id))
+            .unwrap_or_else(|| Vec::new(&env))
+    }
+
+    // ---------------------------------------------------------------
+    // Bills & recurring payments (also used for child allowances)
+    // ---------------------------------------------------------------
+
