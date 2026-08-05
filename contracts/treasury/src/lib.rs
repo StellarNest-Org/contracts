@@ -285,3 +285,15 @@ impl TreasuryContract {
         Ok(id)
     }
 
+    pub fn approve_withdrawal(
+        env: Env,
+        withdrawal_id: u64,
+        approver: Address,
+    ) -> Result<(), Error> {
+        approver.require_auth();
+        let mut withdrawal: Withdrawal = env
+            .storage()
+            .persistent()
+            .get(&DataKey::Withdrawal(withdrawal_id))
+            .ok_or(Error::WithdrawalNotFound)?;
+
