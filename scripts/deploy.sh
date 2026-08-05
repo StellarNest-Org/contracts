@@ -9,19 +9,14 @@ set -euo pipefail
 NETWORK="${1:-testnet}"
 SOURCE="${2:-treasury-deployer}"
 
-echo "==> Building treasury contract (wasm32v1-none, release)"
+echo "==> Building treasury contract (wasm32v1-none, release, optimized)"
 stellar contract build
 
 WASM_PATH="target/wasm32v1-none/release/treasury.wasm"
 
-echo "==> Optimizing wasm"
-stellar contract optimize --wasm "$WASM_PATH"
-
-OPTIMIZED_WASM="target/wasm32v1-none/release/treasury.optimized.wasm"
-
 echo "==> Deploying to $NETWORK as $SOURCE"
 CONTRACT_ID=$(stellar contract deploy \
-  --wasm "$OPTIMIZED_WASM" \
+  --wasm "$WASM_PATH" \
   --source "$SOURCE" \
   --network "$NETWORK")
 
