@@ -337,3 +337,15 @@ Tests use `soroban_sdk::testutils` (`Env::default()`, `mock_all_auths()`,
 `Address::generate`, a locally-registered Stellar Asset Contract for
 minting/transfer assertions) — no network or deployed contract required.
 
+## Deployment
+
+```bash
+./scripts/deploy.sh testnet <your-source-account>
+```
+
+The script builds, optimizes (`stellar contract optimize`), and deploys
+the wasm, writing the resulting contract id to `.contract-id.<network>`
+(gitignored). Pass `mainnet`, `futurenet`, or `local` as the first
+argument for other networks. See `scripts/deploy.sh` for the exact
+`stellar contract` invocations.
+
