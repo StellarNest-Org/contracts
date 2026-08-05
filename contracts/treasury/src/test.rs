@@ -261,3 +261,13 @@ fn inheritance_vault_requires_allocation_sum_to_10000_bps() {
         &2,
     );
 
+    let mut beneficiaries = Vec::new(&env);
+    beneficiaries.push_back(Beneficiary {
+        address: child,
+        allocation_bps: 5_000,
+    });
+
+    let result = client.try_create_inheritance_vault(&id, &owner, &beneficiaries, &1000, &1000, &1);
+    assert_eq!(result, Err(Ok(Error::InvalidAllocation)));
+}
+
