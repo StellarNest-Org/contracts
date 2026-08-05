@@ -187,3 +187,21 @@ fn frozen_treasury_blocks_withdrawals() {
     assert!(client.get_withdrawal(&withdrawal_id).executed);
 }
 
+#[test]
+fn savings_goal_progress_tracks_contributions() {
+    let (env, client, asset) = setup();
+    let owner = Address::generate(&env);
+    let id = client.create_treasury(
+        &owner,
+        &String::from_str(&env, "Family"),
+        &asset,
+        &1_000,
+        &2,
+    );
+    let goal_id = client.create_savings_goal(
+        &id,
+        &owner,
+        &String::from_str(&env, "Emergency Fund"),
+        &1_000,
+    );
+
