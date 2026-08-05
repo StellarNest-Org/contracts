@@ -690,3 +690,19 @@ fn require_role(
     }
 }
 
+fn execute_transfer(env: &Env, treasury_id: u64, to: &Address, amount: i128) -> Result<(), Error> {
+    let mut treasury = load_treasury(env, treasury_id)?;
+    if treasury.frozen {
+        return Err(Error::TreasuryFrozen);
+    }
+    if treasury.balance < amount {
+        return Err(Error::InsufficientBalance);
+    }
+    let token_client = token::Client::new(env, &treasury.asset);
+    token_client.transfer(&env.current_contract_address(), to, &amount);
+    treasury.balance -= amount;
+    env.storage()
+        .persistent()
+        .set(&DataKey::Treasury(treasury_id), &treasury);
+    Ok(())
+}
