@@ -659,3 +659,17 @@ fn load_treasury(env: &Env, treasury_id: u64) -> Result<Treasury, Error> {
         .ok_or(Error::TreasuryNotFound)
 }
 
+fn load_member(env: &Env, treasury_id: u64, address: &Address) -> Result<Member, Error> {
+    env.storage()
+        .persistent()
+        .get(&DataKey::Member(treasury_id, address.clone()))
+        .ok_or(Error::MemberNotFound)
+}
+
+fn load_vault(env: &Env, treasury_id: u64) -> Result<InheritanceVault, Error> {
+    env.storage()
+        .persistent()
+        .get(&DataKey::Vault(treasury_id))
+        .ok_or(Error::VaultNotFound)
+}
+
