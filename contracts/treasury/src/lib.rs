@@ -436,3 +436,16 @@ impl TreasuryContract {
         let treasury = load_treasury(&env, treasury_id)?;
         require_role(&env, &treasury, &caller, Role::can_administer)?;
 
+        let id = next_id(&env, &DataKey::NextBillId);
+        let bill = Bill {
+            id,
+            treasury_id,
+            name,
+            payee,
+            amount,
+            interval_ledgers,
+            next_due_ledger: env.ledger().sequence() + interval_ledgers,
+            active: true,
+        };
+        env.storage().persistent().set(&DataKey::Bill(id), &bill);
+
