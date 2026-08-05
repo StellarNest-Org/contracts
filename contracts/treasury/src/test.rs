@@ -364,3 +364,7 @@ fn non_administrator_cannot_add_members() {
     );
     client.add_member(&id, &owner, &viewer, &crate::types::Role::Viewer, &None);
 
+    let result = client.try_add_member(&id, &viewer, &stranger, &crate::types::Role::Child, &None);
+    assert_eq!(result, Err(Ok(Error::NotAuthorized)));
+}
+
