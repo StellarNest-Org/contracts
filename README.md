@@ -349,3 +349,24 @@ the wasm, writing the resulting contract id to `.contract-id.<network>`
 argument for other networks. See `scripts/deploy.sh` for the exact
 `stellar contract` invocations.
 
+## Design principles
+
+- **Non-custodial.** The contract never receives or stores a private key.
+  It moves funds only via `token::Client::transfer`, authorized by the
+  caller's own signature on that specific call — StellarNest the company
+  has no more power over a family's funds than any other observer of the
+  public ledger.
+- **Rules are enforced on-chain**, not in application code. A compromised
+  or buggy backend cannot bypass the approval threshold or a child's
+  spending limit, because the contract itself checks them before moving
+  funds — see [Why a smart contract, not just a database](#why-a-smart-contract-not-just-a-database).
+- **Every family shares one contract instance.** Treasuries are
+  namespaced by id rather than deployed per-family, which keeps
+  deployment and upgrades simple while state stays fully isolated per
+  `treasury_id` — one bug in one family's data can't leak into another's.
+- **Permissionless where trust isn't needed.** `pay_bill` and
+  `claim_inheritance` (once conditions are met) can be called by anyone —
+  the contract's own checks are the security boundary, not caller
+  identity, so a cron job or a beneficiary can trigger them without being
+  granted any special privilege.
+
