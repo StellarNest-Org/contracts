@@ -47,3 +47,19 @@ impl TreasuryContract {
             .persistent()
             .set(&DataKey::Treasury(id), &treasury);
 
+        let member = Member {
+            role: Role::Owner,
+            spending_limit: None,
+            joined_at: env.ledger().timestamp(),
+        };
+        env.storage()
+            .persistent()
+            .set(&DataKey::Member(id, owner.clone()), &member);
+        let members: Vec<Address> = Vec::from_array(&env, [owner]);
+        env.storage()
+            .persistent()
+            .set(&DataKey::MemberList(id), &members);
+
+        id
+    }
+
