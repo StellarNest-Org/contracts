@@ -167,3 +167,18 @@ impl TreasuryContract {
         Ok(())
     }
 
+    pub fn get_member(env: Env, treasury_id: u64, member: Address) -> Result<Member, Error> {
+        load_member(&env, treasury_id, &member)
+    }
+
+    pub fn list_members(env: Env, treasury_id: u64) -> Vec<Address> {
+        env.storage()
+            .persistent()
+            .get(&DataKey::MemberList(treasury_id))
+            .unwrap_or_else(|| Vec::new(&env))
+    }
+
+    // ---------------------------------------------------------------
+    // Rules engine
+    // ---------------------------------------------------------------
+
