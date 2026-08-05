@@ -534,3 +534,11 @@ impl TreasuryContract {
             return Err(Error::VaultAlreadyExists);
         }
 
+        let mut total_bps: u32 = 0;
+        for b in beneficiaries.iter() {
+            total_bps += b.allocation_bps;
+        }
+        if total_bps != 10_000 {
+            return Err(Error::InvalidAllocation);
+        }
+
